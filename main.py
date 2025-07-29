@@ -7,6 +7,7 @@ import random
 
 NUM_COLUMNS = 3
 NUM_PLAYERS = 2
+COL_HEIGHT = 3
 
 ##################################################################
 ######################## GAME OBJECTS ############################
@@ -36,9 +37,27 @@ class PlayerBoard:
         return total_score
     
     # Modifies the col in place to add the rolled die
-    # This is definitely way too much abstraction lol
     def add_die_to_col(self, col_num: int, die_roll: int):
+        if len(self.board[col_num]) >= COL_HEIGHT:
+            raise Exception('Trying to add die to full column')
+
         self.board[col_num].append(die_roll)
+
+# Manages the overall board state
+class GameBoard:
+    def __init__(self, game_board: list[PlayerBoard] = None):
+        self.game_board = game_board or [PlayerBoard(), PlayerBoard()]
+
+    # Takes in a player number and returns the board "from their perspective"
+    # NOTE This is expressed generally but only really works for 2 players currently
+    def get_board_for_player(self, player_num: int = 0) -> list[PlayerBoard]:
+        return [
+            self.game_board[player_num].board,
+            self.game_board[player_num - 1].board
+        ]
+    
+    def add_die_to_col_for_player(self, player_num: int, col: int, die_roll: int):
+        pass
 
 
 class Strategy(ABC):
@@ -63,25 +82,16 @@ class Player:
         board_state[0].add_die_to_col(placement_col, die_roll)
 
 
-# NOTE: handles game board, which could be broken out into it's own class
 class Match:
     def __init__(self, players: list[Player]):
         self.players = players
-        # for player_num in range(0, NUM_PLAYERS):
-        #     self.players[player_num].player_num = player_num
-
-        # NOTE: We can't really do this with more than 2
-        self.game_board = [PlayerBoard()] * NUM_PLAYERS
-
-    # Takes in a player number and returns the board "from their perspective"
-    def _get_board_state_for_player(self, player_num: int) -> list[PlayerBoard]:
-        return [
-            self.game_board[player_num],
-            self.game_board[player_num - 1]
-        ]
+        # TODO game_board / board consistency
+        self.game_board = GameBoard()
     
-    def do_rounds(self, num_rounds: int):
-        pass
+    # def do_rounds(self, num_rounds: int):
+    def do_round(self):
+        for i in range(NUM_PLAYERS):
+            self.players[i].take_turn(self.game_board.get_board_for_player(i))
 
 ##################################################################
 ######################### STRATEGIES ############################
