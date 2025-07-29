@@ -43,6 +43,21 @@ def test_player_board_scoring_multiples():
         assert test_board.col_score(i) == expected_score[i]
     assert test_board.total_score() == sum(expected_score)
 
+def test_add_die_to_col():
+    test_board = PlayerBoard([
+        [1,2],
+        [],
+        [1,2,3]
+    ])
+
+    test_board.add_die_to_col(1, 4)
+
+    assert test_board.board == [
+        [1,2],
+        [4],
+        [1,2,3]
+    ]
+
 def test_add_die_to_col_will_error_if_col_full():
     test_board = PlayerBoard([
         [1,2],
@@ -53,16 +68,37 @@ def test_add_die_to_col_will_error_if_col_full():
     with pytest.raises(Exception):
         test_board.add_die_to_col(2, 4)
 
-def test_player_take_turn_modifies_board():
-    with patch('random.randint', return_value=5):
-        test_board = [PlayerBoard(), PlayerBoard()]
-        mock_strategy = MagicMock()
-        mock_strategy.get_placement_column.return_value = 1
+def test_remove_die_from_col():
+    test_board = PlayerBoard([
+        [1,2],
+        [],
+        [1,2,3]
+    ])
+    test_board.remove_dice_from_col(0, 1)
+    test_board.board == [
+        [2],
+        [],
+        [1,2,3]
+    ]
 
-        test_player = Player(mock_strategy)
-        test_player.take_turn(test_board)
-        assert test_board[0].board == [[],[5],[]]
-        assert test_board[1].board == EMPTY_BOARD
+
+def test_game_board_defaults_to_empty():
+    test_game_board = GameBoard()
+    assert test_game_board.get_board_for_player(0) == [EMPTY_BOARD, EMPTY_BOARD]
+
+def test_do_player_turn_modifies_board():
+    with patch('random.randint', return_value=2):
+        mock_player_1 = MagicMock()
+        mock_player_2 = MagicMock()
+        mock_player_1.get_placement_column_for_roll.return_value = 1
+        test_match = Match([mock_player_1, mock_player_2])
+
+        test_match.do_player_turn(0)
+
+        assert test_match.game_board.get_board_for_player(0) == [
+            [[],[2],[]],
+            EMPTY_BOARD
+        ]
 
 # TODO rewrite
 @pytest.mark.skip()
@@ -81,31 +117,34 @@ def test_match_can_do_round():
         assert match.game_board[1].board == [[],[],[2]]
 
 # TODO Implement
-@pytest.mark.skip()
-def test_matching_numbers_will_cancel_opponent():
-    with patch('random.randint', side_effect=[5,5]):
-        test_game_board = GameBoard([PlayerBoard(), PlayerBoard()])
+def test_matching_opponent_die_will_erase_it():
+    p1_board = PlayerBoard([
+        [1,2,3],
+        [4],
+        []
+    ])
+    p2_board = PlayerBoard([
+        [6,6],
+        [],
+        [3,1,3]
+    ])
+    test_game_board = GameBoard([p1_board, p2_board])
+    test_game_board.add_die_to_col_for_player(0, 2, 3)
 
-        mock_strategy = MagicMock()
-        mock_strategy.get_placement_column.side_effect = [1,1]
-
-        test_player_1 = Player(mock_strategy)
-        test_player_2 = Player(mock_strategy)
-
-        test_player_1.take_turn(test_game_board.get_board_for_player(0))
-        assert test_game_board.get_board_for_player() == [
-            [[],[5],[]],
-            EMPTY_BOARD
+    assert test_game_board.get_board_for_player(0) == [
+        [
+            [1,2,3],
+            [4],
+            [3]
+        ],
+        [
+            [6,6],
+            [],
+            [1]
         ]
+    ]
 
-        test_player_2.take_turn(test_game_board.get_board_for_player(1))
-        assert test_game_board.get_board_for_player() == [
-            EMPTY_BOARD,
-            [[],[5],[]]
-        ]
-
-
-def test_game_board_gets_board_for_player():
+def test_game_board_gets_board_for_player_perspective():
     p1_board = [
         [1,2,3],
         [4],

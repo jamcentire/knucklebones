@@ -43,6 +43,11 @@ class PlayerBoard:
 
         self.board[col_num].append(die_roll)
 
+    # Modifies the col in place to remove all instances of the die_roll number
+    def remove_dice_from_col(self, col_num: int, die_roll: int):
+        self.board[col_num] = [roll for roll in self.board[col_num] if roll != die_roll]
+
+
 # Manages the overall board state
 class GameBoard:
     def __init__(self, game_board: list[PlayerBoard] = None):
@@ -57,7 +62,8 @@ class GameBoard:
         ]
     
     def add_die_to_col_for_player(self, player_num: int, col: int, die_roll: int):
-        pass
+        self.game_board[player_num].add_die_to_col(col, die_roll)
+        self.game_board[player_num - 1].remove_dice_from_col(col, die_roll)
 
 
 class Strategy(ABC):
@@ -71,15 +77,15 @@ class Strategy(ABC):
         pass
 
 
+# NOTE: This is currently just a pass-through for Strategy. May change later (or remove)
 class Player:
     def __init__(self, strategy: Strategy):
         self.strategy = strategy
 
     # Accepts board_state as [my_board, opponent_board]
-    def take_turn(self, board_state: list[PlayerBoard]):
-        die_roll = random.randint(1,6)
-        placement_col = self.strategy.get_placement_column(board_state, die_roll)
-        board_state[0].add_die_to_col(placement_col, die_roll)
+    # TODO change name from Strategy method (or erase Player entirely)
+    def get_placement_column_for_roll(self, board_state: list[PlayerBoard], die_roll: int):
+        return self.strategy.get_placement_column(board_state, die_roll)
 
 
 class Match:
@@ -89,9 +95,12 @@ class Match:
         self.game_board = GameBoard()
     
     # def do_rounds(self, num_rounds: int):
-    def do_round(self):
-        for i in range(NUM_PLAYERS):
-            self.players[i].take_turn(self.game_board.get_board_for_player(i))
+    def do_player_turn(self, player_num: int):
+        die_roll = random.randint(1,6)
+        player_board_state = self.game_board.get_board_for_player(player_num)
+        col = self.players[player_num].get_placement_column_for_roll(player_board_state, die_roll)
+        self.game_board.add_die_to_col_for_player(player_num, col, die_roll)
+
 
 ##################################################################
 ######################### STRATEGIES ############################
