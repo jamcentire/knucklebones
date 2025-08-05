@@ -1,6 +1,9 @@
 from abc import ABC, abstractmethod
 import random
 
+import pprint
+import numpy as np
+
 ##################################################################
 ########################## CONSTANTS #############################
 ##################################################################
@@ -85,7 +88,7 @@ class Player:
     # Accepts board_state as [my_board, opponent_board]
     # TODO change name from Strategy method (or erase Player entirely)
     def get_placement_column_for_roll(self, board_state: list[PlayerBoard], die_roll: int):
-        return self.strategy.get_placement_column(board_state, die_roll)
+        return self.strategy.get_placement_column(self.strategy, board_state, die_roll)
 
 
 class Match:
@@ -97,11 +100,13 @@ class Match:
 
     def _board_is_full(self, player_board):
         return all([len(col) == 3 for col in player_board])
-    
-    def run_match(self):
-        while not self._game_over:
-            self.do_game_round()
 
+    def run_match(self):
+        rd = 0
+        while not self._game_over:
+            rd += 1
+            # print(f'------------ BEGINNING ROUND {rd} -------------------')
+            self.do_game_round()
 
         p1_score = self.game_board.game_board[0].total_score()
         p2_score = self.game_board.game_board[1].total_score()
@@ -122,13 +127,16 @@ class Match:
             # TODO find a more efficient way than checking after every move
             if self._board_is_full(self.game_board.game_board[num].board):
                 self._game_over = True
-    
+
     # def do_rounds(self, num_rounds: int):
     def do_player_turn(self, player_num: int):
         die_roll = random.randint(1,6)
         player_board_state = self.game_board.get_game_board_from_player_perspective(player_num)
         col = self.players[player_num].get_placement_column_for_roll(player_board_state, die_roll)
+        # print(f'Player {player_num}:    {die_roll} --> {col}')
         self.game_board.add_die_to_col_for_player(player_num, col, die_roll)
+        # print('BOARD STATE: ')
+        # pprint.pp(self.game_board.get_game_board_from_player_perspective(0))
 
 
 ##################################################################
@@ -138,7 +146,8 @@ class Match:
 # Randomly determines where to place die
 class RandomStrat(Strategy):
     def get_placement_column(self, board_state: list[PlayerBoard], die_roll: int) -> int:
-        open_col_nums = [i for i in range(0, NUM_COLUMNS) if len(board_state[i]) < 2]
+        # TODO decide on passing objects vs their boards (simplify this design as a whole)
+        open_col_nums = [i for i in range(0, NUM_COLUMNS) if len(board_state[0][i]) < COL_HEIGHT]
         # TODO don't return full col
         return random.choice(open_col_nums)
 
@@ -146,10 +155,17 @@ class RandomStrat(Strategy):
 ########################### SERIES ###############################
 ##################################################################
 
+p1 = Player(RandomStrat)
+p2 = Player(RandomStrat)
 
+SAMPLE_SIZE = 100
 
-##################################################################
-######################### STRATEGIES ############################
-##################################################################
-
-# Randomly determines where to place die
+overall = [0,0]
+for i in range(SAMPLE_SIZE):
+    print(f'Running Match {i}...')
+    match = Match([p1,p2])
+    result = match.run_match()
+    overall = np.add(overall, result)
+    print(f'Result: {result}   |  Overall: {overall}')
+print('----------------- RESULTS -----------------------')
+print(overall)
