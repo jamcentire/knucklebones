@@ -4,6 +4,7 @@ import pytest
 
 from main import (
     Match,
+    Heuristic,
     Player,
     PlayerBoard,
     GameBoard,
@@ -180,6 +181,36 @@ def test_match_ends_when_board_full_with_winner():
     with patch.object(Match, '_board_is_full', return_value=True):
         assert [0,1] == test_match.run_match()
 
+def test_prioritize_multiples_heuristic():
+    # TODO change to import from module rather than instantiate
+    heuristics = Heuristic()
+    # Should return -1 if no match found
+    assert -1 == heuristics.prioritize_multiples([
+        PlayerBoard([[1,2],[4],[]]),
+        PlayerBoard()
+    ], 5)
 
-# TODO test match ends when board full
-# TODO test player num consistency?
+    # Should return column with matching number if exists
+    assert 1 == heuristics.prioritize_multiples([
+        PlayerBoard([[1,2],[4],[]]),
+        PlayerBoard()
+    ], 4)
+
+    # Should return -1 if matches only exist in full columns
+    assert -1 == heuristics.prioritize_multiples([
+        PlayerBoard([[1,2],[],[4,5,6]]),
+        PlayerBoard()
+    ], 5)
+
+    # Should prioritize greater number of multiples if several columns contain matches
+    assert 2 == heuristics.prioritize_multiples([
+        PlayerBoard([[2],[],[2,2]]),
+        PlayerBoard()
+    ], 2)
+
+    # Should choose leftmost column if several columns contain matches
+    # TODO should it? Seems restrictive
+    assert 0 == heuristics.prioritize_multiples([
+        PlayerBoard([[2],[1],[2]]),
+        PlayerBoard()
+    ], 2)

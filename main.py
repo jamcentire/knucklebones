@@ -68,6 +68,29 @@ class GameBoard:
         self.game_board[player_num].add_die_to_col(col, die_roll)
         self.game_board[player_num - 1].remove_dice_from_col(col, die_roll)
 
+# TODO change this from a class into a separate file/module (cleaner, and won't have to instantiate class to use)
+class Heuristic:
+    def random(self, board_state: list[PlayerBoard], die_roll: int) -> int:
+        # TODO decide on passing objects vs their boards (simplify this design as a whole)
+        open_col_nums = [i for i in range(0, NUM_COLUMNS) if len(board_state[0][i]) < COL_HEIGHT]
+        return random.choice(open_col_nums)
+
+    def prioritize_multiples(self, board_state: list[PlayerBoard], die_roll: int) -> int:
+        # open_columns = [col for col in board_state[0].board if len(col) < 2]
+        target_col = -1
+        curr_match_ct = 0
+
+        for i, col in enumerate(board_state[0].board):
+            match_ct = col.count(die_roll)
+            if len(col) >= COL_HEIGHT or match_ct == 0:
+                continue
+
+            if match_ct > curr_match_ct:
+                curr_match_ct = match_ct
+                target_col = i
+
+        return target_col
+
 
 class Strategy(ABC):
     @abstractmethod
@@ -146,15 +169,13 @@ class Match:
 # Randomly determines where to place die
 class RandomStrat(Strategy):
     def get_placement_column(self, board_state: list[PlayerBoard], die_roll: int) -> int:
-        # TODO decide on passing objects vs their boards (simplify this design as a whole)
-        open_col_nums = [i for i in range(0, NUM_COLUMNS) if len(board_state[0][i]) < COL_HEIGHT]
-        # TODO don't return full col
-        return random.choice(open_col_nums)
+        return Heuristic.random(board_state, die_roll)
 
 ##################################################################
 ########################### SERIES ###############################
 ##################################################################
 
+'''
 p1 = Player(RandomStrat)
 p2 = Player(RandomStrat)
 
@@ -169,3 +190,4 @@ for i in range(SAMPLE_SIZE):
     print(f'Result: {result}   |  Overall: {overall}')
 print('----------------- RESULTS -----------------------')
 print(overall)
+'''
