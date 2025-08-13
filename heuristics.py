@@ -14,7 +14,6 @@ def random_placement(board_state: list[PlayerBoard], die_roll: int) -> int:
     return random.choice(open_col_nums)
 
 def prioritize_multiples(board_state: list[PlayerBoard], die_roll: int) -> int:
-    # open_columns = [col for col in board_state[0].board if len(col) < 2]
     target_col = -1
     curr_match_ct = 0
 
@@ -27,4 +26,20 @@ def prioritize_multiples(board_state: list[PlayerBoard], die_roll: int) -> int:
             curr_match_ct = match_ct
             target_col = i
 
+    return target_col
+
+def prioritize_deletion(board_state: list[PlayerBoard], die_roll: int) -> int:
+    target_col = -1
+    curr_match_ct = 0
+
+    for col_num in range(NUM_COLUMNS):
+        match_ct = board_state[1][col_num].count(die_roll)
+        if len(board_state[0][col_num]) >= COL_HEIGHT or match_ct == 0:
+            continue
+
+        if match_ct > curr_match_ct:
+            curr_match_ct = match_ct
+            target_col = col_num
+
+    # print(f'For board state {board_state[1]}, selecting col {target_col}')
     return target_col

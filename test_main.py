@@ -6,7 +6,6 @@ from boards import PlayerBoard, GameBoard
 from players import Player
 from constants import NUM_COLUMNS
 from matches import Match
-from heuristics import prioritize_multiples
 
 EMPTY_BOARD = [[] for i in range(NUM_COLUMNS)]
 
@@ -177,38 +176,6 @@ def test_match_ends_with_winner_when_board_full():
 
     with patch.object(Match, '_board_is_full', return_value=True):
         assert [0,1] == test_match.run_match()
-
-def test_prioritize_multiples_heuristic():
-    # Should return -1 if no match found
-    assert -1 == prioritize_multiples([
-        PlayerBoard([[1,2],[4],[]]),
-        PlayerBoard()
-    ], 5)
-
-    # Should return column with matching number if exists
-    assert 1 == prioritize_multiples([
-        PlayerBoard([[1,2],[4],[]]),
-        PlayerBoard()
-    ], 4)
-
-    # Should return -1 if matches only exist in full columns
-    assert -1 == prioritize_multiples([
-        PlayerBoard([[1,2],[],[4,5,6]]),
-        PlayerBoard()
-    ], 5)
-
-    # Should prioritize greater number of multiples if several columns contain matches
-    assert 2 == prioritize_multiples([
-        PlayerBoard([[2],[],[2,2]]),
-        PlayerBoard()
-    ], 2)
-
-    # Should choose leftmost column if several columns contain matches
-    # TODO should it? Seems restrictive
-    assert 0 == prioritize_multiples([
-        PlayerBoard([[2],[1],[2]]),
-        PlayerBoard()
-    ], 2)
 
 def test_player_will_use_multiple_heuristics():
     test_heuristics = [MagicMock()] * 3

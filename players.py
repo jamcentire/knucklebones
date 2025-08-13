@@ -16,5 +16,3 @@ class Player():
                 return col
 
         raise Exception(f'No placement choice given by strategy: {self.strategy}')
-
-        pass
