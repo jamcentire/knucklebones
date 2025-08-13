@@ -1,15 +1,11 @@
 from unittest.mock import MagicMock, patch
-import random
+#import random
 import pytest
 
-from main import (
-    Match,
-    Heuristic,
-    Player,
-    PlayerBoard,
-    GameBoard,
-    NUM_COLUMNS
-)
+from boards import PlayerBoard, GameBoard
+from constants import NUM_COLUMNS
+from main import Match
+from heuristics import random_placement, prioritize_multiples
 
 EMPTY_BOARD = [[] for i in range(NUM_COLUMNS)]
 
@@ -141,7 +137,7 @@ def test_do_player_turn_modifies_board():
     with patch('random.randint', return_value=2):
         mock_player_1 = MagicMock()
         mock_player_2 = MagicMock()
-        mock_player_1.get_placement_column_for_roll.return_value = 1
+        mock_player_1.get_placement_column.return_value = 1
         test_match = Match([mock_player_1, mock_player_2])
 
         test_match.do_player_turn(0)
@@ -155,8 +151,8 @@ def test_match_can_do_round():
     with patch('random.randint', side_effect=[5,2]):
         mock_player_1 = MagicMock()
         mock_player_2 = MagicMock()
-        mock_player_1.get_placement_column_for_roll.return_value = 1
-        mock_player_2.get_placement_column_for_roll.return_value = 2
+        mock_player_1.get_placement_column.return_value = 1
+        mock_player_2.get_placement_column.return_value = 2
 
         match = Match([mock_player_1, mock_player_2])
         match.do_game_round()
@@ -182,35 +178,33 @@ def test_match_ends_when_board_full_with_winner():
         assert [0,1] == test_match.run_match()
 
 def test_prioritize_multiples_heuristic():
-    # TODO change to import from module rather than instantiate
-    heuristics = Heuristic()
     # Should return -1 if no match found
-    assert -1 == heuristics.prioritize_multiples([
+    assert -1 == prioritize_multiples([
         PlayerBoard([[1,2],[4],[]]),
         PlayerBoard()
     ], 5)
 
     # Should return column with matching number if exists
-    assert 1 == heuristics.prioritize_multiples([
+    assert 1 == prioritize_multiples([
         PlayerBoard([[1,2],[4],[]]),
         PlayerBoard()
     ], 4)
 
     # Should return -1 if matches only exist in full columns
-    assert -1 == heuristics.prioritize_multiples([
+    assert -1 == prioritize_multiples([
         PlayerBoard([[1,2],[],[4,5,6]]),
         PlayerBoard()
     ], 5)
 
     # Should prioritize greater number of multiples if several columns contain matches
-    assert 2 == heuristics.prioritize_multiples([
+    assert 2 == prioritize_multiples([
         PlayerBoard([[2],[],[2,2]]),
         PlayerBoard()
     ], 2)
 
     # Should choose leftmost column if several columns contain matches
     # TODO should it? Seems restrictive
-    assert 0 == heuristics.prioritize_multiples([
+    assert 0 == prioritize_multiples([
         PlayerBoard([[2],[1],[2]]),
         PlayerBoard()
     ], 2)
