@@ -3,9 +3,10 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from boards import PlayerBoard, GameBoard
+from players import Player
 from constants import NUM_COLUMNS
 from main import Match
-from heuristics import random_placement, prioritize_multiples
+from heuristics import prioritize_multiples
 
 EMPTY_BOARD = [[] for i in range(NUM_COLUMNS)]
 
@@ -160,7 +161,7 @@ def test_match_can_do_round():
         assert match.game_board.game_board[0].board == [[],[5],[]]
         assert match.game_board.game_board[1].board == [[],[],[2]]
 
-def test_match_ends_when_board_full_with_winner():
+def test_match_ends_with_winner_when_board_full():
     mock_player_1 = MagicMock()
     mock_player_2 = MagicMock()
     mock_player_1_board = MagicMock()
@@ -208,3 +209,23 @@ def test_prioritize_multiples_heuristic():
         PlayerBoard([[2],[1],[2]]),
         PlayerBoard()
     ], 2)
+
+def test_player_will_use_multiple_heuristics():
+    test_heuristics = [MagicMock()] * 3
+    test_player = Player(test_heuristics)
+
+    test_heuristics[0].return_value = -1
+    test_heuristics[1].return_value = 2
+
+    assert test_player.get_placement_column([PlayerBoard(), PlayerBoard()], 1) == 2
+
+def test_player_will_use_multiple_heuristics():
+    test_heuristics = [MagicMock()] * 3
+    test_player = Player(test_heuristics)
+
+    test_heuristics[0].return_value = -1
+    test_heuristics[1].return_value = -1
+    test_heuristics[2].return_value = -1
+
+    with pytest.raises(Exception):
+        test_player.get_placement_column([PlayerBoard(), PlayerBoard()], 1)
