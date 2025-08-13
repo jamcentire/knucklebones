@@ -18,7 +18,7 @@ def prioritize_multiples(board_state: list[PlayerBoard], die_roll: int) -> int:
     target_col = -1
     curr_match_ct = 0
 
-    for i, col in enumerate(board_state[0].board):
+    for i, col in enumerate(board_state[0]):
         match_ct = col.count(die_roll)
         if len(col) >= COL_HEIGHT or match_ct == 0:
             continue

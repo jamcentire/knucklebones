@@ -5,7 +5,7 @@ import pytest
 from boards import PlayerBoard, GameBoard
 from players import Player
 from constants import NUM_COLUMNS
-from main import Match
+from matches import Match
 from heuristics import prioritize_multiples
 
 EMPTY_BOARD = [[] for i in range(NUM_COLUMNS)]
