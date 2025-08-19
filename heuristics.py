@@ -4,42 +4,51 @@ from constants import NUM_COLUMNS, COL_HEIGHT
 from boards import PlayerBoard
 
 
-# All heuristics take in a board state and die roll and return the column in which they place the die
-# Accepts board_state as [my_board, opponent_board]
-# Will not return a col number for a full col
-# Returns a col_num int for chosen column, or -1 if no col_num chosen
+'''
+All heuristics take in a board state, a list of viable column numbers, and a die roll.
+All heuristics return a list of all optimal columns numbers from the viable columns given
+Accepts board_state as [my_board, opponent_board]
+We assume that we will receive no full (or otherwise unviable) column numbers
+'''
 
-def random_placement(board_state: list[PlayerBoard], die_roll: int) -> int:
+#######################################################################
+############################## HEURISTICS #############################
+#######################################################################
+def random_placement(board_state: list[PlayerBoard], viable_col_nums: list[int], die_roll: int) -> list[int]:
     open_col_nums = [i for i in range(0, NUM_COLUMNS) if len(board_state[0][i]) < COL_HEIGHT]
     return random.choice(open_col_nums)
 
-def prioritize_multiples(board_state: list[PlayerBoard], die_roll: int) -> int:
-    target_col = -1
-    curr_match_ct = 0
+def prioritize_multiples(board_state: list[PlayerBoard], viable_col_nums: list[int], die_roll: int) -> list[int]:
+    return _get_col_nums_for_max_matches(
+        board_state[0], viable_col_nums, die_roll
+    )
 
-    for i, col in enumerate(board_state[0]):
-        match_ct = col.count(die_roll)
-        if len(col) >= COL_HEIGHT or match_ct == 0:
-            continue
+def prioritize_deletion(board_state: list[PlayerBoard], viable_col_nums: list[int], die_roll: int) -> list[int]:
+    return _get_col_nums_for_max_matches(
+        board_state[1], viable_col_nums, die_roll
+    )
 
-        if match_ct > curr_match_ct:
-            curr_match_ct = match_ct
-            target_col = i
-
-    return target_col
-
-def prioritize_deletion(board_state: list[PlayerBoard], die_roll: int) -> int:
-    target_col = -1
+#######################################################################
+########################### HELPER FUNCTIONS ##########################
+#######################################################################
+def _get_col_nums_for_max_matches(board: PlayerBoard, viable_col_nums: list[int], die_roll: int) -> list[int]:
+    target_cols = []
     curr_match_ct = 0
 
     for col_num in range(NUM_COLUMNS):
-        match_ct = board_state[1][col_num].count(die_roll)
-        if len(board_state[0][col_num]) >= COL_HEIGHT or match_ct == 0:
+        if col_num not in viable_col_nums:
             continue
 
-        if match_ct > curr_match_ct:
-            curr_match_ct = match_ct
-            target_col = col_num
+        match_ct = board[col_num].count(die_roll)
 
-    # print(f'For board state {board_state[1]}, selecting col {target_col}')
-    return target_col
+        if match_ct == curr_match_ct:
+            target_cols.append(col_num)
+
+        elif match_ct > curr_match_ct:
+            target_cols.clear()
+            target_cols.append(col_num)
+            curr_match_ct = match_ct
+
+        # TODO handle failure case
+
+    return target_cols

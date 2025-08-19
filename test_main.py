@@ -8,7 +8,7 @@ from constants import NUM_COLUMNS
 from matches import Match
 
 EMPTY_BOARD = [[] for i in range(NUM_COLUMNS)]
-
+VIABLE_COLS = [i for i in range(NUM_COLUMNS)]
 
 def test_player_board_scoring():
     test_board = PlayerBoard([
@@ -178,21 +178,25 @@ def test_match_ends_with_winner_when_board_full():
         assert [0,1] == test_match.run_match()
 
 def test_player_will_use_multiple_heuristics():
+    test_die_roll = 1
+    test_board = [PlayerBoard(), PlayerBoard()]
     test_heuristics = [MagicMock()] * 3
     test_player = Player(test_heuristics)
 
-    test_heuristics[0].return_value = -1
-    test_heuristics[1].return_value = 2
+    test_heuristics[0].return_value = [1,2]
+    test_heuristics[1].return_value = [2]
 
-    assert test_player.get_placement_column([PlayerBoard(), PlayerBoard()], 1) == 2
+    assert test_player.get_placement_column(test_board, test_die_roll) == 2
 
-def test_player_will_use_multiple_heuristics():
+    test_heuristics[1].assert_called_once_with(test_board, VIABLE_COLS, test_die_roll)
+
+def test_player_will_fail_if_no_heuristics_work():
     test_heuristics = [MagicMock()] * 3
     test_player = Player(test_heuristics)
 
-    test_heuristics[0].return_value = -1
-    test_heuristics[1].return_value = -1
-    test_heuristics[2].return_value = -1
+    test_heuristics[0].return_value = [0,1,2]
+    test_heuristics[1].return_value = [0,1,2]
+    test_heuristics[2].return_value = [0,1,2]
 
     with pytest.raises(Exception):
         test_player.get_placement_column([PlayerBoard(), PlayerBoard()], 1)
