@@ -133,32 +133,36 @@ def test_matching_opponent_die_will_erase_it():
         ]
     ]
 
-def test_do_player_turn_modifies_board():
-    with patch('random.randint', return_value=2):
-        mock_player_1 = MagicMock()
-        mock_player_2 = MagicMock()
-        mock_player_1.get_placement_column.return_value = 1
-        test_match = Match([mock_player_1, mock_player_2])
+@patch('random.randint')
+def test_do_player_turn_modifies_board(mock_randint):
+    mock_randint.return_value = 2
+    mock_player_1 = MagicMock()
+    mock_player_2 = MagicMock()
+    mock_player_1.get_placement_column.return_value = 1
+    test_match = Match([mock_player_1, mock_player_2])
 
-        test_match.do_player_turn(0)
+    test_match.do_player_turn(0)
 
-        assert test_match.game_board.get_game_board_from_player_perspective(0) == [
-            [[],[2],[]],
-            EMPTY_BOARD
-        ]
+    assert test_match.game_board.get_game_board_from_player_perspective(0) == [
+        [[],[2],[]],
+        EMPTY_BOARD
+    ]
 
-def test_match_can_do_round():
-    with patch('random.randint', side_effect=[5,2]):
-        mock_player_1 = MagicMock()
-        mock_player_2 = MagicMock()
-        mock_player_1.get_placement_column.return_value = 1
-        mock_player_2.get_placement_column.return_value = 2
+@patch('random.randint')
+@patch('random.choice')
+def test_match_can_do_round(mock_choice, mock_randint):
+    mock_randint.side_effect = [5,2]
+    mock_choice.return_value = [0,1]
+    mock_player_1 = MagicMock()
+    mock_player_2 = MagicMock()
+    mock_player_1.get_placement_column.return_value = 1
+    mock_player_2.get_placement_column.return_value = 2
 
-        match = Match([mock_player_1, mock_player_2])
-        match.do_game_round()
+    match = Match([mock_player_1, mock_player_2])
+    match.do_game_round()
 
-        assert match.game_board.game_board[0].board == [[],[5],[]]
-        assert match.game_board.game_board[1].board == [[],[],[2]]
+    assert match.game_board.game_board[0].board == [[],[5],[]]
+    assert match.game_board.game_board[1].board == [[],[],[2]]
 
 def test_match_ends_with_winner_when_board_full():
     mock_player_1 = MagicMock()

@@ -8,6 +8,9 @@ from players import Player
 class Match:
     def __init__(self, players: list[Player], game_board: GameBoard = None):
         self.players = players
+        # Randomly decide player order ("who goes first)"
+        # NOTE this is another place where we can't propery handle PLAYER_CT > 2
+        self.player_order = random.choice([ [0,1], [1, 0] ])
         # TODO game_board / board consistency
         self.game_board = game_board or GameBoard()
         self._game_over = False
@@ -37,8 +40,7 @@ class Match:
 
     def do_game_round(self):
         # NOTE which player goes first causes a ~10 pt swing in percentage victory
-        # TODO randomize who goes first
-        for num in range(len(self.players)):
+        for num in self.player_order:
             self.do_player_turn(num)
             # TODO find a more efficient way than checking after every move
             if self._board_is_full(self.game_board.game_board[num].board):
