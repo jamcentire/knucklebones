@@ -179,7 +179,7 @@ def test_match_ends_with_winner_when_board_full():
 
 def test_player_will_use_multiple_heuristics():
     test_die_roll = 1
-    test_board = [PlayerBoard(), PlayerBoard()]
+    test_board = [EMPTY_BOARD, EMPTY_BOARD]
     test_heuristics = [MagicMock()] * 3
     test_player = Player(test_heuristics)
 
@@ -200,3 +200,13 @@ def test_player_will_fail_if_no_heuristics_work():
 
     with pytest.raises(Exception):
         test_player.get_placement_column([PlayerBoard(), PlayerBoard()], 1)
+
+def test_get_placement_column_will_screen_out_full_columns():
+    # col 0 is full, so we should see our heuristic called with [1,2]
+    test_board = [[[1,2,1], [1], []], EMPTY_BOARD]
+    test_heuristics = [MagicMock()] * 3
+    test_player = Player(test_heuristics)
+
+    test_heuristics[0].return_value = [0]
+    test_player.get_placement_column(test_board, 1)
+    test_heuristics[0].assert_called_once_with(test_board, [1,2], 1)

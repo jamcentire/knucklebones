@@ -36,6 +36,8 @@ class Match:
         
 
     def do_game_round(self):
+        # NOTE which player goes first causes a ~10 pt swing in percentage victory
+        # TODO randomize who goes first
         for num in range(len(self.players)):
             self.do_player_turn(num)
             # TODO find a more efficient way than checking after every move

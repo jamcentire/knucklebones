@@ -9,8 +9,9 @@ class Player():
         self.strategy = strategy
 
     # Accepts board_state as [my_board, opponent_board]
-    def get_placement_column(self, board_state: list[PlayerBoard], die_roll: int):
-        viable_cols = [i for i in range(NUM_COLUMNS)]
+    def get_placement_column(self, board_state: list[list[int]], die_roll: int):
+        # Screen out full columns, pass the rest as options
+        viable_cols = [i for i in range(NUM_COLUMNS) if len(board_state[0][i]) < 3]
         for heur in self.strategy:
             cols = heur(board_state, viable_cols, die_roll)
             if len(cols) == 1:
