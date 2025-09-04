@@ -5,13 +5,14 @@ import random
 from boards import GameBoard
 from players import Player
 
+
+# TODO Add parameter for dynamic debugging
 class Match:
     def __init__(self, players: list[Player], game_board: GameBoard = None):
         self.players = players
         # Randomly decide player order ("who goes first)"
         # NOTE this is another place where we can't propery handle PLAYER_CT > 2
         self.player_order = random.choice([ [0,1], [1, 0] ])
-        # TODO game_board / board consistency
         self.game_board = game_board or GameBoard()
         self._game_over = False
 
@@ -23,7 +24,7 @@ class Match:
         while not self._game_over:
             rd += 1
             # print(f'------------ BEGINNING ROUND {rd} -------------------')
-            self.do_game_round()
+            self._do_game_round()
 
         p1_score = self.game_board.game_board[0].total_score()
         p2_score = self.game_board.game_board[1].total_score()
@@ -38,7 +39,7 @@ class Match:
         return [0,0]
         
 
-    def do_game_round(self):
+    def _do_game_round(self):
         # NOTE which player goes first causes a ~10 pt swing in percentage victory
         for num in self.player_order:
             self.do_player_turn(num)

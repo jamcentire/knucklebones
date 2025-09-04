@@ -159,7 +159,7 @@ def test_match_can_do_round(mock_choice, mock_randint):
     mock_player_2.get_placement_column.return_value = 2
 
     match = Match([mock_player_1, mock_player_2])
-    match.do_game_round()
+    match._do_game_round()
 
     assert match.game_board.game_board[0].board == [[],[5],[]]
     assert match.game_board.game_board[1].board == [[],[],[2]]

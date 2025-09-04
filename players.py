@@ -1,7 +1,5 @@
 from constants import NUM_COLUMNS
 
-from boards import PlayerBoard
-
 class Player():
     # Takes in a list of heuristics to use in order
     # TODO always put random as last?

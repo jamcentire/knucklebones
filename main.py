@@ -7,4 +7,7 @@ p_del = Player([prioritize_deletion, random_placement])
 p_rand = Player([random_placement])
 p_rand2 = Player([random_placement])
 
-run_series(p_del, p_mult, 10000)
+p1 = Player([prioritize_deletion, prioritize_multiples, random_placement])
+p2 = Player([prioritize_multiples, prioritize_deletion, random_placement])
+
+run_series(p1, p2, 10000)

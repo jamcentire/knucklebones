@@ -55,6 +55,3 @@ class GameBoard:
     def add_die_to_col_for_player(self, player_num: int, col: int, die_roll: int):
         self.game_board[player_num].add_die_to_col(col, die_roll)
         self.game_board[player_num - 1].remove_dice_from_col(col, die_roll)
-
-    # def get_board_state_from_player_perspective(self, player_num: int) -> list[list[int]]:
-    #     return [self.game_board[0].board, self.game_board[1].board]
